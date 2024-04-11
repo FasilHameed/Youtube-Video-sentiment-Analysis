@@ -47,16 +47,21 @@ def generate_gemini_content(transcript_text, prompt, max_length):
     return summary
 
 
-# Function to analyze sentiment of text
-def analyze_sentiment(text):
+# Function to analyze sentiment of text and provide explanation
+def analyze_sentiment_with_explanation(text):
     blob = TextBlob(text)
     sentiment_score = blob.sentiment.polarity
     if sentiment_score > 0:
-        return "Positive"
+        sentiment = "Positive"
+        explanation = "The sentiment is positive because the text contains predominantly positive language."
     elif sentiment_score == 0:
-        return "Neutral"
+        sentiment = "Neutral"
+        explanation = "The sentiment is neutral as there is an equal balance of positive and negative language."
     else:
-        return "Negative"
+        sentiment = "Negative"
+        explanation = "The sentiment is negative because the text contains predominantly negative language."
+
+    return sentiment, explanation
 
 
 # Streamlit app
@@ -82,12 +87,24 @@ if st.sidebar.button("🚀 Perform Action"):
     elif action == "Analyze Sentiment":
         transcript_text = extract_transcript_details(youtube_link)
         if transcript_text:
-            sentiment = analyze_sentiment(transcript_text)
+            sentiment, explanation = analyze_sentiment_with_explanation(transcript_text)
             st.markdown("## Sentiment Analysis:")
-            st.write(f"The sentiment of the video is: {sentiment}")
+            st.markdown(f"The sentiment of the video is: **{sentiment}**")
 
-# Show YouTube video thumbnail if link provided
-if youtube_link:
+            # Display explanation
+            st.markdown("### Explanation:")
+            st.write(explanation)
+
+            # Adjust appearance based on sentiment
+            if sentiment == "Positive":
+                st.write(f"The sentiment of the video is: {sentiment}", unsafe_allow_html=True)
+                st.write('<p style="font-size: large; color: green;">The sentiment of the video is positive!</p>', unsafe_allow_html=True)
+            elif sentiment == "Negative":
+                st.write(f"The sentiment of the video is: {sentiment}", unsafe_allow_html=True)
+                st.write('<p style="font-size: large; color: red;">The sentiment of the video is negative!</p>', unsafe_allow_html=True)
+
+# Show YouTube video thumbnail if link provided and action is not sentiment analysis
+if youtube_link and action != "Analyze Sentiment":
     video_id = youtube_link.split("=")[1]
     st.image(f"http://img.youtube.com/vi/{video_id}/0.jpg", use_column_width=True)
 else:
